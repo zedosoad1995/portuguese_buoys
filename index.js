@@ -12,9 +12,9 @@ var map_characteristic = {
     temperature: 4
 };
 
-async function get_buoys_data(path, res){
+async function get_buoys_data(path){
+    let resp = {}
     try {
-        let resp = {}
 
         // GET Request
         const response = await got(path);
@@ -37,20 +37,44 @@ async function get_buoys_data(path, res){
             })
         });
 
-        res.json(resp)
-
     } catch (error) {
         console.log(error.response.body);
     }
+    return resp;
 }
 
+// scrape multiple buoys data
+async function get_buoys_data_all(values){
 
-server.get('/ini', function (req, res, next) {
+    resp = {}
+    
+    for(const val in values){
+        const path = `https://www.hidrografico.pt/json/boia.graph.php?id_est=1005&id_eqp=1009&gmt=GMT&dtz=Europe/Lisbon&dbn=monican&par=${val}&per=3`
+        let res = await get_buoys_data(path)
+        const keys = Object.keys(res)
+        keys.forEach(key => {
+            resp[key] = res[key]
+        })
+    }
+    return resp
+}
 
-    const characteristic = map_characteristic[req.query.char].toString()
-    const path = `https://www.hidrografico.pt/json/boia.graph.php?id_est=1005&id_eqp=1009&gmt=GMT&dtz=Europe/Lisbon&dbn=monican&par=${characteristic}&per=3`
+server.get('/scrape', function (req, res, next) {
 
-    get_buoys_data(path, res)
+    if(req.query.char === 'all'){
+        var values = Object.values(map_characteristic)
+        get_buoys_data_all(values).then(resp => {
+            res.json(resp)
+        })
+
+    }else{
+        const characteristic = map_characteristic[req.query.char]
+        const path = `https://www.hidrografico.pt/json/boia.graph.php?id_est=1005&id_eqp=1009&gmt=GMT&dtz=Europe/Lisbon&dbn=monican&par=${characteristic}&per=3`
+
+        get_buoys_data(path).then(resp => {
+            res.json(resp)
+        })
+    }
 
 });
   
