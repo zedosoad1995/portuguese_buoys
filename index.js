@@ -12,7 +12,7 @@ var map_characteristic = {
     temperature: 4
 };
 
-async function get_buoys_data(path){
+async function get_buoys_data(path, transformation_type){
     let resp = {}
     try {
 
@@ -28,13 +28,22 @@ async function get_buoys_data(path){
         // Transform data
         data.forEach(item => {
             const keys = Object.keys(item)
-            keys.forEach(key => {
-                if(key in resp){
-                    resp[key].push(item[key])
-                }else{
-                    resp[key] = [item[key]]
-                }
-            })
+            if(transformation_type==='all_arrays'){
+                keys.forEach(key => {
+                    if(key in resp){
+                        resp[key].push(item[key])
+                    }else{
+                        resp[key] = [item[key]]
+                    }
+                })
+            }else if(transformation_type==='date_keys'){
+                resp[item["SDATA"]] = {}
+                keys.forEach(key => {
+                    if(key !== "SDATA"){
+                        resp[item["SDATA"]][key] = item[key]
+                    }
+                })
+            }
         });
 
     } catch (error) {
@@ -47,16 +56,46 @@ async function get_buoys_data(path){
 async function get_buoys_data_all(values){
 
     resp = {}
+    sub_keys = []
     
     for(const val in values){
         const path = `https://www.hidrografico.pt/json/boia.graph.php?id_est=1005&id_eqp=1009&gmt=GMT&dtz=Europe/Lisbon&dbn=monican&par=${val}&per=3`
-        let res = await get_buoys_data(path)
-        const keys = Object.keys(res)
-        keys.forEach(key => {
-            resp[key] = res[key]
-        })
+        let res = await get_buoys_data(path, "date_keys")
+        if(Object.keys(resp).length === 0){
+            resp = res
+        }else{
+            Object.keys(res).forEach(key => {
+                if(!(key in resp)){
+                    resp[key] = {}
+                }
+                Object.keys(res[key]).forEach(key2 => {
+                    resp[key][key2] = res[key][key2]
+                    if(!sub_keys.includes(key2)){
+                        sub_keys.push(key2)
+                    }
+                })
+            })
+        }
     }
-    return resp
+    Object.keys(resp).forEach(key => {
+        sub_keys.forEach(key2 => {
+            if(!Object.keys(resp[key]).includes(key2)){
+                resp[key][key2] = "NaN"
+            }
+        })
+    })
+    let resp2 = {}
+    resp2["DATE"] = Object.keys(resp)
+    Object.keys(resp).forEach(key => {
+        Object.keys(resp[key]).forEach(key2 => {
+            if(key2 in resp2){
+                resp2[key2].push(resp[key][key2])
+            }else{
+                resp2[key2] = [resp[key][key2]]
+            }
+        })
+    })
+    return resp2
 }
 
 server.get('/scrape', function (req, res, next) {
@@ -71,7 +110,7 @@ server.get('/scrape', function (req, res, next) {
         const characteristic = map_characteristic[req.query.char]
         const path = `https://www.hidrografico.pt/json/boia.graph.php?id_est=1005&id_eqp=1009&gmt=GMT&dtz=Europe/Lisbon&dbn=monican&par=${characteristic}&per=3`
 
-        get_buoys_data(path).then(resp => {
+        get_buoys_data(path, "all_arrays").then(resp => {
             res.json(resp)
         })
     }
