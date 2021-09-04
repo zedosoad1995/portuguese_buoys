@@ -3,14 +3,28 @@ const server = express();
 const PORT = 8150;
 
 const https = require('https')
-const options = {
-  hostname: 'hidrografico.pt',
-  port: 443,
-  path: '/json/boia.graph.php?id_est=1005&id_eqp=1009&gmt=GMT&dtz=Europe/Lisbon&dbn=monican&par=4&per=3',
-  method: 'GET'
-}
+
+// Map user friendly request names, into numbers
+var map_characteristic = {
+    height: 1,
+    period: 2,
+    direction: 3,
+    temperature: 4
+};
+
+
+
 
 server.get('/ini', function (req, res, next) {
+
+    const characteristic = map_characteristic[req.query.char].toString()
+
+    const options = {
+        hostname: 'hidrografico.pt',
+        port: 443,
+        path: `/json/boia.graph.php?id_est=1005&id_eqp=1009&gmt=GMT&dtz=Europe/Lisbon&dbn=monican&par=${characteristic}&per=3`,
+        method: 'GET'
+      }
 
     let resp = {}
 
@@ -19,9 +33,12 @@ server.get('/ini', function (req, res, next) {
         
         http_res.on('data', d => {
             let text = d.toString("utf8");
-            if (text.codePointAt(0) === 0xFEFF) { // UTF8 BOM
+            console.log(text)
+            console.log('yuppi!')
+            if (text.codePointAt(0) === 0xFEFF) {
                 text = text.substring(1);
             }
+            //console.log(text)
             const data = JSON.parse(text)
 
             data.forEach(item => {
