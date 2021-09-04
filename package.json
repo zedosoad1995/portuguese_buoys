@@ -1,0 +1,36 @@
+{
+  "name": "portuguese_buoys",
+  "version": "1.0.0",
+  "description": "scrapes portuguese buoys data, and returns historical data",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon caravanServer.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zedosoad1995/portuguese_buoys.git"
+  },
+  "keywords": [
+    "buoys",
+    "portuguese",
+    "portugal",
+    "web scrapping",
+    "Faro",
+    "Algarve",
+    "sea"
+  ],
+  "author": "Joao Queiroz",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zedosoad1995/portuguese_buoys/issues"
+  },
+  "homepage": "https://github.com/zedosoad1995/portuguese_buoys#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "https": "^1.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
+  }
+}
