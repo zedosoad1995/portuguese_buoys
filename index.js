@@ -2,7 +2,7 @@ const express = require('express');
 const server = express();
 const PORT = 8150;
 
-const https = require('https')
+const got = require('got');
 
 // Map user friendly request names, into numbers
 var map_characteristic = {
@@ -12,53 +12,46 @@ var map_characteristic = {
     temperature: 4
 };
 
+async function get_buoys_data(path, res){
+    try {
+        let resp = {}
 
+        // GET Request
+        const response = await got(path);
+        // Converts response to JSON
+        let text = response.body
+        if (text.codePointAt(0) === 0xFEFF) {
+            text = text.substring(1);
+        }
+        let data = JSON.parse(text)
+
+        // Transform data
+        data.forEach(item => {
+            const keys = Object.keys(item)
+            keys.forEach(key => {
+                if(key in resp){
+                    resp[key].push(item[key])
+                }else{
+                    resp[key] = [item[key]]
+                }
+            })
+        });
+
+        res.json(resp)
+
+    } catch (error) {
+        console.log(error.response.body);
+    }
+}
 
 
 server.get('/ini', function (req, res, next) {
 
     const characteristic = map_characteristic[req.query.char].toString()
+    const path = `https://www.hidrografico.pt/json/boia.graph.php?id_est=1005&id_eqp=1009&gmt=GMT&dtz=Europe/Lisbon&dbn=monican&par=${characteristic}&per=3`
 
-    const options = {
-        hostname: 'hidrografico.pt',
-        port: 443,
-        path: `/json/boia.graph.php?id_est=1005&id_eqp=1009&gmt=GMT&dtz=Europe/Lisbon&dbn=monican&par=${characteristic}&per=3`,
-        method: 'GET'
-      }
+    get_buoys_data(path, res)
 
-    let resp = {}
-
-    const http_req = https.request(options, http_res => {
-        console.log(`statusCode: ${http_res.statusCode}`)
-        
-        http_res.on('data', d => {
-            let text = d.toString("utf8");
-            console.log(text)
-            console.log('yuppi!')
-            if (text.codePointAt(0) === 0xFEFF) {
-                text = text.substring(1);
-            }
-            //console.log(text)
-            const data = JSON.parse(text)
-
-            data.forEach(item => {
-                const keys = Object.keys(item)
-                keys.forEach(key => {
-                    if(key in resp){
-                        resp[key].push(item[key])
-                    }else{
-                        resp[key] = [item[key]]
-                    }
-                })
-            });
-
-            res.json(resp)
-        })
-    })
-    http_req.on('error', error => {
-        console.error(error)
-    })
-    http_req.end()
 });
   
 
