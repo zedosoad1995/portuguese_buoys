@@ -3,20 +3,7 @@ const server = express();
 const PORT = 8150;
 
 const got = require('got');
-
-const fs = require('fs');
-
-let rawdata = fs.readFileSync('credentials.json');
-let credentials = JSON.parse(rawdata);
-
-const Pool = require('pg').Pool
-const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'joaodb',
-  password: credentials["dbPassword"],
-  port: 5432,
-})
+const queries = require('./queries')
 
 // Map user friendly request names, into numbers
 var map_characteristic = {
@@ -26,16 +13,7 @@ var map_characteristic = {
     temperature: 4
 };
 
-const createUser = (request, response) => {  
-    pool.query('INSERT INTO buoys (date, max_height, significant_height, avg_period, peak_period, direction, temperature)\
-                VALUES ($1, $2, $3, $4, $5, $6, $7)', ['2020-10-05 14:01:10', 1.1, 0.9, 7.3, 8, 358, 24.5], (error, results) => {
-        if (error) {
-            throw error
-        }
-        response.status(201).send(`User added with ID: ${results.insertId}`)
-    })
-}
-createUser
+server.get('/insertBuyos', queries.insertBuyosData)
 
 async function get_buoys_data(path, transformation_type){
     let resp = {}
