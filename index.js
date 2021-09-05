@@ -4,12 +4,17 @@ const PORT = 8150;
 
 const got = require('got');
 
+const fs = require('fs');
+
+let rawdata = fs.readFileSync('credentials.json');
+let credentials = JSON.parse(rawdata);
+
 const Pool = require('pg').Pool
 const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
   database: 'joaodb',
-  password: 'Platipus1_',
+  password: credentials["dbPassword"],
   port: 5432,
 })
 
