@@ -28,7 +28,8 @@
   "homepage": "https://github.com/zedosoad1995/portuguese_buoys#readme",
   "dependencies": {
     "express": "^4.17.1",
-    "got": "^11.8.2"
+    "got": "^11.8.2",
+    "pg": "^8.7.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.12"
