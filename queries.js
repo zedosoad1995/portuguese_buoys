@@ -13,8 +13,10 @@ const pool = new Pool({
 })
 
 function check_null(val){
-    if(val === "NaN"){
-        return null
+    for(var i = 0; i < val.length; i++){
+        if(val[i] === "NaN"){
+            val[i] = null
+        }
     }
     return val
 }
@@ -23,25 +25,26 @@ function check_null(val){
 var Param_names = ["DATE", "HMAX", "HS", "TZ", "TP", "THTP", "TEMP"]
 async function insertBuyosData(request, response){
     const obj = request.body
-    console.log(obj)
-    for(let i = 0; i < obj["DATE"].length; i++){
-        let date = check_null(obj["DATE"][i])
-        if(date !== null){
-            date += "+01"
+
+    var vals_to_insert = []
+    Object.keys(obj).forEach(key => {
+        vals_to_insert.push('{' + JSON.stringify(check_null(obj[key])).slice(1,-1) + '}')
+    });
+
+    await pool.query('TRUNCATE TABLE temp_buoys', (error, results) => {
+        if (error) {
+            throw error
         }
-        const hmax = check_null(obj["HMAX"][i])
-        const hs = check_null(obj["HS"][i])
-        const tz = check_null(obj["TZ"][i])
-        const tp = check_null(obj["TP"][i])
-        const thtp = check_null(obj["THTP"][i])
-        const temp = check_null(obj["TEMP"][i])
-        await pool.query('INSERT INTO buoys (date, max_height, significant_height, avg_period, peak_period, direction, temperature)\
-                    VALUES ($1, $2, $3, $4, $5, $6, $7)', [date, hmax, hs, tz, tp, thtp, temp], (error, results) => {
+        pool.query('INSERT INTO temp_buoys (date, max_height, significant_height, avg_period, peak_period, direction, temperature)\
+                    VALUES(UNNEST($1::TIMESTAMPTZ[]), UNNEST($2::NUMERIC[]), UNNEST($3::NUMERIC[]), UNNEST($4::NUMERIC[]),\
+                    UNNEST($5::NUMERIC[]), UNNEST($6::INTEGER[]), UNNEST($7::NUMERIC[]))', 
+        vals_to_insert, (error, results) => {
             if (error) {
                 throw error
             }
         })
-    }
+    })
+
     response.status(201).send("Success")
 }
 
