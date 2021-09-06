@@ -31,14 +31,18 @@ async function insertBuyosData(request, response){
         vals_to_insert.push('{' + JSON.stringify(check_null(obj[key])).slice(1,-1) + '}')
     });
 
-
-    await pool.query('INSERT INTO temp_buoys (date, max_height, significant_height, avg_period, peak_period, direction, temperature)\
-                    VALUES(UNNEST($1::TIMESTAMPTZ[]), UNNEST($2::NUMERIC[]), UNNEST($3::NUMERIC[]), UNNEST($4::NUMERIC[]),\
-                    UNNEST($5::NUMERIC[]), UNNEST($6::INTEGER[]), UNNEST($7::NUMERIC[]))', 
-                    vals_to_insert, (error, results) => {
+    await pool.query('TRUNCATE TABLE temp_buoys', (error, results) => {
         if (error) {
             throw error
         }
+        pool.query('INSERT INTO temp_buoys (date, max_height, significant_height, avg_period, peak_period, direction, temperature)\
+                    VALUES(UNNEST($1::TIMESTAMPTZ[]), UNNEST($2::NUMERIC[]), UNNEST($3::NUMERIC[]), UNNEST($4::NUMERIC[]),\
+                    UNNEST($5::NUMERIC[]), UNNEST($6::INTEGER[]), UNNEST($7::NUMERIC[]))', 
+        vals_to_insert, (error, results) => {
+            if (error) {
+                throw error
+            }
+        })
     })
 
     response.status(201).send("Success")
