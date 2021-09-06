@@ -72,7 +72,6 @@ async function get_buoys_data_all(values){
     
     for(const val of values){
         const path = `https://www.hidrografico.pt/json/boia.graph.php?id_est=1005&id_eqp=1009&gmt=GMT&dtz=Europe/Lisbon&dbn=monican&par=${val}&per=3`
-        console.log(path)
         let res = await get_buoys_data(path, "date_keys")
         if(Object.keys(resp).length === 0){
             resp = res
