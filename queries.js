@@ -31,7 +31,7 @@ const map_cols_types = {
     'temperature': 'NUMERIC',
 }
 
-function make_update_query(list_columns){
+function make_update_query(list_columns, last_date){
     let return_string = "UPDATE buoys SET "
     for(col of list_columns){
         return_string += col + " = t3." + col + ", "
@@ -40,11 +40,11 @@ function make_update_query(list_columns){
     for(col of list_columns){
         return_string += "CASE WHEN (t2." + col + " IS NULL) THEN t1." + col + " ELSE t2." + col + " END AS " + col + ", "
     }
-    return_string = return_string.slice(0, -2) + " FROM temp_buoys t1 INNER JOIN buoys t2 ON t2.date = t1.date WHERE "
+    return_string = return_string.slice(0, -2) + " FROM temp_buoys t1 INNER JOIN buoys t2 ON t2.date = t1.date WHERE ("
     for(col of list_columns){
         return_string += "t2." + col + " IS NULL OR "
     }
-    return_string = return_string.slice(0, -" OR ".length) + ") AS t3 WHERE t3.date = buoys.date"
+    return_string = return_string.slice(0, -" OR ".length) + ") AND t2.date >= " + last_date + ") AS t3 WHERE t3.date = buoys.date"
 
     return return_string
 }
@@ -74,13 +74,11 @@ function make_temp_insert_query(list_columns){
     return_string += ")"
     return return_string
 }
-//'INSERT INTO temp_buoys (date, max_height, significant_height, avg_period, peak_period, direction, temperature)\
-//                    VALUES(UNNEST($1::TIMESTAMPTZ[]), UNNEST($2::NUMERIC[]), UNNEST($3::NUMERIC[]), UNNEST($4::NUMERIC[]),\
-//                    UNNEST($5::NUMERIC[]), UNNEST($6::INTEGER[]), UNNEST($7::NUMERIC[]))'
 
 var Param_names = ["DATE", "HMAX", "HS", "TZ", "TP", "THTP", "TEMP"]
 async function insertBuyosData(request, response){
     const obj = request.body
+    const last_date = "'" + obj["DATE"][0].toString() + "+01'"
 
     var vals_to_insert = []
     Object.keys(obj).forEach(key => {
@@ -96,7 +94,8 @@ async function insertBuyosData(request, response){
             if (error) {
                 throw error
             }
-            pool.query(make_update_query(list_columns), (error, results) => {
+            console.log(make_update_query(list_columns, last_date))
+            pool.query(make_update_query(list_columns, last_date), (error, results) => {
                 if (error) {
                     throw error
                 }
