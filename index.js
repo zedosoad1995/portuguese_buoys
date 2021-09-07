@@ -129,4 +129,31 @@ server.get('/scrape', function (req, res, next) {
 
 });
 
+
+async function do_post(str, resp){
+    const {body, statusCode} = await got.post(str, {json: resp});
+}
+
+server.get('/scrapeAndSave', function (req, res, next) {
+
+    if(req.query.char === 'all'){
+        var values = Object.values(map_characteristic)
+        get_buoys_data_all(values).then(resp => {
+            do_post('http://localhost:8150/insertBuyos', resp);
+        }).then(resp => {
+            res.status(201).send("Success")
+        })
+
+    }else{
+        const characteristic = map_characteristic[req.query.char]
+        const path = `https://www.hidrografico.pt/json/boia.graph.php?id_est=1005&id_eqp=1009&gmt=GMT&dtz=Europe/Lisbon&dbn=monican&par=${characteristic}&per=3`
+
+        get_buoys_data(path, "all_arrays").then(resp => {
+            res.json(resp)
+        })
+    }
+
+});
+  
+
 server.listen(PORT, () => console.log(`Server from port: ${PORT} activated!`));

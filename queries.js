@@ -91,7 +91,6 @@ async function insertBuyosData(request, response){
         if (error) {
             throw error
         }
-        console.log(make_temp_insert_query(list_columns))
         pool.query(make_temp_insert_query(list_columns), 
         vals_to_insert, (error, results) => {
             if (error) {
