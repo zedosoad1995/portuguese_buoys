@@ -76,7 +76,8 @@ function make_temp_insert_query(list_columns){
 }
 
 var Param_names = ["DATE", "HMAX", "HS", "TZ", "TP", "THTP", "TEMP"]
-async function insertBuyosData(request, response){
+// POST, Insert new buoys values
+async function insertBuoysData(request, response){
     const obj = request.body
     const last_date = "'" + obj["DATE"][0].toString() + "+01'"
 
@@ -112,6 +113,21 @@ async function insertBuyosData(request, response){
     response.status(201).send("Success")
 }
 
+// GET, Get rows between 2 dates
+// e.g: http://localhost:8150/getBuoys?date_ini="2021-09-05 23:00%2b01"&date_fin="2021-09-06 22:00%2b01"
+async function getBuoysData(request, response){
+    const date_ini = request.query.date_ini
+    const date_fin = request.query.date_fin
+    console.log([date_ini, date_fin])
+    await pool.query('SELECT * FROM buoys WHERE date >= $1 AND date <= $2 ORDER BY date', [date_ini, date_fin], (error, results) => {
+        if (error) {
+            throw error
+        }
+        response.json(results.rows)
+    })
+}
+
 module.exports = {
-    insertBuyosData,
+    insertBuoysData,
+    getBuoysData
 }

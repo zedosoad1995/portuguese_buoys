@@ -22,7 +22,8 @@ var map_characteristic = {
     temperature: 4
 };
 
-server.post('/insertBuyos', bodyParser.json(), queries.insertBuyosData)
+server.post('/insertBuoys', bodyParser.json(), queries.insertBuoysData)
+server.get('/getBuoys', queries.getBuoysData)
 
 async function get_buoys_data(path, transformation_type){
     let resp = {}
@@ -130,7 +131,7 @@ server.get('/scrape', function (req, res, next) {
 });
 
 
-async function do_post(str, resp){
+async function make_post(str, resp){
     const {body, statusCode} = await got.post(str, {json: resp});
 }
 
@@ -139,7 +140,7 @@ server.get('/scrapeAndSave', function (req, res, next) {
     if(req.query.char === 'all'){
         var values = Object.values(map_characteristic)
         get_buoys_data_all(values).then(resp => {
-            do_post('http://localhost:8150/insertBuyos', resp);
+            make_post('http://localhost:8150/insertBuyos', resp);
         }).then(resp => {
             res.status(201).send("Success")
         })
