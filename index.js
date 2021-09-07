@@ -128,6 +128,5 @@ server.get('/scrape', function (req, res, next) {
     }
 
 });
-  
 
 server.listen(PORT, () => console.log(`Server from port: ${PORT} activated!`));
