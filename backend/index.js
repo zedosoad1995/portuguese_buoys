@@ -2,6 +2,12 @@ const express = require('express');
 const server = express();
 const PORT = 8150;
 
+server.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+
 const got = require('got');
 const queries = require('./queries')
 
@@ -137,10 +143,11 @@ async function make_post(str, resp){
 
 server.get('/scrapeAndSave', function (req, res, next) {
 
-    if(req.query.char === 'all'){
+
+    if(req.query.char === 'all' || typeof req.query.char === 'undefined'){
         var values = Object.values(map_characteristic)
         get_buoys_data_all(values).then(resp => {
-            make_post('http://localhost:8150/insertBuyos', resp);
+            make_post('http://localhost:8150/insertBuoys', resp);
         }).then(resp => {
             res.status(201).send("Success")
         })
