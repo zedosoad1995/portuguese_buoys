@@ -113,17 +113,46 @@ async function insertBuoysData(request, response){
     response.status(201).send("Success")
 }
 
+function format_json(obj){
+    let return_obj = {}
+    // Initialize object keys
+    if(obj.rowCount > 0){
+        Object.keys(obj.rows[0]).forEach(key => {
+            return_obj[key] = []
+        })
+    }
+    obj.rows.forEach(one_line => {
+        Object.keys(one_line).forEach(key => {
+            return_obj[key].push(one_line[key])
+        })
+    })
+    return return_obj
+}
+
 // GET, Get rows between 2 dates
 // e.g: http://localhost:8150/getBuoys?date_ini="2021-09-05 23:00%2b01"&date_fin="2021-09-06 22:00%2b01"
 async function getBuoysData(request, response){
     const date_ini = request.query.date_ini
     const date_fin = request.query.date_fin
-    console.log([date_ini, date_fin])
-    await pool.query('SELECT * FROM buoys WHERE date >= $1 AND date <= $2 ORDER BY date', [date_ini, date_fin], (error, results) => {
+    let query = 'SELECT * FROM buoys WHERE true'
+    let num_params = 1
+    let input_params = []
+    if(typeof date_ini !== 'undefined'){
+        query += ' AND date >= $' + num_params
+        num_params++
+        input_params.push(date_ini)
+    }
+    if(typeof date_fin !== 'undefined'){
+        query += ' AND date <= $' + num_params
+        input_params.push(date_fin)
+    }
+    query += ' ORDER BY date'
+    await pool.query(query, input_params, (error, results) => {
         if (error) {
             throw error
         }
-        response.json(results.rows)
+
+        response.json(format_json(results))
     })
 }
 
