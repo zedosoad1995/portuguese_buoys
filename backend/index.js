@@ -141,7 +141,7 @@ async function make_post(str, resp){
     const {body, statusCode} = await got.post(str, {json: resp});
 }
 
-server.get('/scrapeAndSave', function (req, res, next) {
+server.post('/scrapeAndSave', function (req, res, next) {
 
 
     if(req.query.char === 'all' || typeof req.query.char === 'undefined'){

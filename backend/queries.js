@@ -95,7 +95,6 @@ async function insertBuoysData(request, response){
             if (error) {
                 throw error
             }
-            console.log(make_update_query(list_columns, last_date))
             pool.query(make_update_query(list_columns, last_date), (error, results) => {
                 if (error) {
                     throw error
@@ -151,7 +150,6 @@ async function getBuoysData(request, response){
         if (error) {
             throw error
         }
-
         response.json(format_json(results))
     })
 }

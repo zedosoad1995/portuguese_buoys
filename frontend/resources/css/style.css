@@ -1,0 +1,9 @@
+div.top-btns {
+    margin: 30px;
+}
+div.btn {
+    display: inline-block;
+}
+canvas {
+    margin-left: 30px;
+}
