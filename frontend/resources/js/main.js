@@ -84,6 +84,7 @@ var from = $( "#from" )
 })
 .on( "change", function() {
     to.datepicker( "option", "minDate", getDate( this ) );
+    to.datepicker( "option", "dateFormat", "yy-mm-dd" );
 })
 
 var to = $( "#to" ).datepicker({
@@ -93,6 +94,7 @@ var to = $( "#to" ).datepicker({
 })
 .on( "change", function() {
     from.datepicker( "option", "maxDate", getDate( this ) );
+    from.datepicker( "option", "dateFormat", "yy-mm-dd" );
 })
 
 function getDate( element ) {
@@ -127,5 +129,7 @@ ini_func().then(date_range_ => {
     document.getElementById( "to" ).value = transformDate(date_range['to'][0])
     to.datepicker( "option", "minDate", transformDate(date_range['from'][0]))
     from.datepicker( "option", "maxDate", transformDate(date_range['to'][0]))
+    $( "#from" ).datepicker( "option", "dateFormat", "yy-mm-dd" );
+    $( "#to" ).datepicker( "option", "dateFormat", "yy-mm-dd" );
     displayChart(res['date'], res['temperature'])
 })
