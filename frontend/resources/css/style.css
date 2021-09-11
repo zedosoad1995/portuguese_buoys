@@ -4,6 +4,9 @@ div.top-btns {
 div.btn {
     display: inline-block;
 }
+div.row {
+    margin: 15px 30px;
+}
 canvas {
     margin-left: 30px;
 }

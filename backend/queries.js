@@ -109,7 +109,7 @@ async function insertBuoysData(request, response){
     })
 
 
-    response.status(201).send("Success")
+    response.status(201).send('"Success"')
 }
 
 function format_json(obj){
@@ -154,7 +154,19 @@ async function getBuoysData(request, response){
     })
 }
 
+// GET, Get last date on database
+async function getLastDateRange(request, response){
+    let query = "SELECT MAX(date) AS to, ((MAX(date)) - INTERVAL '7 DAY') AS from FROM buoys;"
+    await pool.query(query, (error, results) => {
+        if (error) {
+            throw error
+        }
+        response.json(format_json(results))
+    })
+}
+
 module.exports = {
     insertBuoysData,
-    getBuoysData
+    getBuoysData,
+    getLastDateRange
 }

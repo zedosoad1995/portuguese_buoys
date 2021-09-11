@@ -30,6 +30,7 @@ var map_characteristic = {
 
 server.post('/insertBuoys', bodyParser.json(), queries.insertBuoysData)
 server.get('/getBuoys', queries.getBuoysData)
+server.get('/lastDateRange', queries.getLastDateRange)
 
 async function get_buoys_data(path, transformation_type){
     let resp = {}
@@ -117,7 +118,7 @@ async function get_buoys_data_all(values){
     return resp2
 }
 
-server.get('/scrape', function (req, res, next) {
+server.post('/scrape', function (req, res, next) {
 
     if(req.query.char === 'all'){
         var values = Object.values(map_characteristic)
@@ -149,7 +150,7 @@ server.post('/scrapeAndSave', function (req, res, next) {
         get_buoys_data_all(values).then(resp => {
             make_post('http://localhost:8150/insertBuoys', resp);
         }).then(resp => {
-            res.status(201).send("Success")
+            res.status(201).send('"Success"')
         })
 
     }else{
