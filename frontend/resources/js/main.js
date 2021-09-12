@@ -1,10 +1,11 @@
 var buoys_data
 var current_param = "temperature"
 var myLineChart
+var date_range
 
 
 async function scrapeAndSave(){
-    const response = await fetch('http://localhost:8150/scrapeAndSave', {
+    let response = await fetch('http://localhost:8150/scrapeAndSave', {
         method: 'POST',
         //body: myBody, // string or object
         headers: {
@@ -12,9 +13,14 @@ async function scrapeAndSave(){
         }
     });
     await response.json()
-    await getBuoysData().then(res => {
-        displayChart(res['date'], res[current_param])
-    })
+    response = await fetch('http://localhost:8150/lastDateRange?days=7')
+    date_range = await response.json()
+    document.getElementById( "from" ).value = date_range['from'][0].slice(0,10)
+    document.getElementById( "to" ).value = date_range['to'][0].slice(0,10)
+    console.log(date_range['to'][0])
+    to.datepicker( "option", "minDate", getDate( document.getElementById( "from" ) ) )
+    from.datepicker( "option", "maxDate", getDate( document.getElementById( "to" ) ) );
+    getBuoysDataAndUpdatesChart(date_range)
 }
 
 async function getBuoysData(date_range){
@@ -27,11 +33,11 @@ async function getBuoysData(date_range){
     return buoys_data
 }
 
-function changePlot(param){
-    current_param = param
-    displayChart(buoys_data['date'], buoys_data[current_param])
+async function getBuoysDataAndUpdatesChart(date_range){
+    getBuoysData(date_range).then(res => {
+        displayChart(res['date'], res[current_param])
+    })
 }
-
 
 function displayChart(x, y){
 
@@ -68,13 +74,13 @@ function displayChart(x, y){
     })
 }
 
+function changePlot(param){
+    current_param = param
+    displayChart(buoys_data['date'], buoys_data[current_param])
+}
 
 
-
-
-
-
-var dateFormat = "mm/dd/yy"
+var dateFormat = "yy-mm-dd"
 
 var from = $( "#from" )
 .datepicker({
@@ -84,8 +90,12 @@ var from = $( "#from" )
 })
 .on( "change", function() {
     to.datepicker( "option", "minDate", getDate( this ) );
-    to.datepicker( "option", "dateFormat", "yy-mm-dd" );
+    //to.datepicker( "option", "dateFormat", "yy-mm-dd" );
+    date_range['from'] = this.value
+    getBuoysDataAndUpdatesChart(date_range)
 })
+
+
 
 var to = $( "#to" ).datepicker({
     defaultDate: "+1w",
@@ -94,8 +104,11 @@ var to = $( "#to" ).datepicker({
 })
 .on( "change", function() {
     from.datepicker( "option", "maxDate", getDate( this ) );
-    from.datepicker( "option", "dateFormat", "yy-mm-dd" );
+    //from.datepicker( "option", "dateFormat", "yy-mm-dd" );
+    date_range['to'] = this.value
+    getBuoysDataAndUpdatesChart(date_range)
 })
+
 
 function getDate( element ) {
     var date;
@@ -112,15 +125,14 @@ function transformDate(date){
     return date.slice(5, 7) + '/' + date.slice(8, 10) + '/' + date.slice(0, 4)
 }
 
-var date_range
-
 // Init
 async function ini_func(){
-    const response = await fetch('http://localhost:8150/lastDateRange')
+    const response = await fetch('http://localhost:8150/lastDateRange?days=7')
     date_range_ = await response.json()
     date_range = date_range_
     return date_range_
 }
+
 ini_func().then(date_range_ => {
     return getBuoysData(date_range_)
 })
@@ -129,7 +141,7 @@ ini_func().then(date_range_ => {
     document.getElementById( "to" ).value = transformDate(date_range['to'][0])
     to.datepicker( "option", "minDate", transformDate(date_range['from'][0]))
     from.datepicker( "option", "maxDate", transformDate(date_range['to'][0]))
-    $( "#from" ).datepicker( "option", "dateFormat", "yy-mm-dd" );
-    $( "#to" ).datepicker( "option", "dateFormat", "yy-mm-dd" );
+    from.datepicker( "option", "dateFormat", "yy-mm-dd" );
+    to.datepicker( "option", "dateFormat", "yy-mm-dd" );
     displayChart(res['date'], res['temperature'])
 })

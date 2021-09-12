@@ -156,7 +156,19 @@ async function getBuoysData(request, response){
 
 // GET, Get last date on database
 async function getLastDateRange(request, response){
-    let query = "SELECT MAX(date) AS to, ((MAX(date)) - INTERVAL '7 DAY') AS from FROM buoys;"
+    let days = request.query.days
+    let months = request.query.months
+    let years = request.query.years
+    if(typeof days === 'undefined'){
+        days = 0
+    }
+    if(typeof months === 'undefined'){
+        months = 0
+    }
+    if(typeof years === 'undefined'){
+        years = 0
+    }
+    let query = "SELECT MAX(date) AS to, ((MAX(date)) - INTERVAL '" + days + " DAY " + months + " MONTH " + years + " YEAR') AS from FROM buoys;"
     await pool.query(query, (error, results) => {
         if (error) {
             throw error
