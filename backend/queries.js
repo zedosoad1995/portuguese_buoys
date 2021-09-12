@@ -168,7 +168,11 @@ async function getLastDateRange(request, response){
     if(typeof years === 'undefined'){
         years = 0
     }
-    let query = "SELECT MAX(date) AS to, ((MAX(date)) - INTERVAL '" + days + " DAY " + months + " MONTH " + years + " YEAR') AS from FROM buoys;"
+    if(typeof request.query.all === 'undefined'){
+        var query = "SELECT MAX(date) AS to, ((MAX(date)) - INTERVAL '" + days + " DAY " + months + " MONTH " + years + " YEAR') AS from FROM buoys"
+    }else{
+        var query = "SELECT MAX(date) AS to, MIN(date) AS from FROM buoys"
+    }
     await pool.query(query, (error, results) => {
         if (error) {
             throw error

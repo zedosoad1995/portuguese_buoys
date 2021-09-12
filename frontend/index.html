@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" type="text/css" href="resources/css/style.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js" integrity="sha512-rmZcZsyhe0/MAjquhTgiUcb4d9knaFc7b5xAfju483gbEXTkeJRUMIPk6s3ySZMYUHEcjKbjLjyddGWMrNEvZg==" crossorigin="anonymous"></script>
@@ -40,6 +41,16 @@
             <input type="text" id="from" name="from">
             <label for="to">to</label>
             <input type="text" id="to" name="to">
+            <label for="from">Range</label>
+            <select id="range">
+                <option value="day">1 Day</option>
+                <option value="week">1 Week</option>
+                <option value="month">1 Month</option>
+                <option value="3 months">3 Months</option>
+                <option value="year">1 Year</option>
+                <option value="all">All</option>
+                <option value="custom">Custom</option>
+            </select>
         </div>
         <div>
             <canvas id="myChart" style="width:100%;max-width:600px"></canvas>

@@ -2,10 +2,28 @@ var buoys_data
 var current_param = "temperature"
 var myLineChart
 var date_range
+var range_option = "all"
+
+var time_range_dict = {
+    "day": {"days": 1, "months": 0, "years": 0},
+    "week": {"days": 7, "months": 0, "years": 0},
+    "month": {"days": 0, "months": 1, "years": 0},
+    "3 months": {"days": 0, "months": 3, "years": 0},
+    "year": {"days": 0, "months": 0, "years": 1},
+}
+
+var chart_proprieties_dict = {
+    temperature: {label: "Temperature (°C)"},
+    max_height: {label: "Maximum Height (m)"},
+    significant_height: {label: "Significant Height (m)"},
+    avg_period: {label: "Average Period (s)"},
+    peak_period: {label: "Peak Period (s)"},
+    direction: {label: "Wave diraction (0° to 360°)"},
+}
 
 
 async function scrapeAndSave(){
-    let response = await fetch('http://localhost:8150/scrapeAndSave', {
+    var response = await fetch('http://localhost:8150/scrapeAndSave', {
         method: 'POST',
         //body: myBody, // string or object
         headers: {
@@ -13,11 +31,14 @@ async function scrapeAndSave(){
         }
     });
     await response.json()
-    response = await fetch('http://localhost:8150/lastDateRange?days=7')
+    if(range_option === 'all'){
+        response = await fetch('http://localhost:8150/lastDateRange?all')
+    }else{
+        response = await fetch(getDataRangeQuery())
+    }
     date_range = await response.json()
     document.getElementById( "from" ).value = date_range['from'][0].slice(0,10)
     document.getElementById( "to" ).value = date_range['to'][0].slice(0,10)
-    console.log(date_range['to'][0])
     to.datepicker( "option", "minDate", getDate( document.getElementById( "from" ) ) )
     from.datepicker( "option", "maxDate", getDate( document.getElementById( "to" ) ) );
     getBuoysDataAndUpdatesChart(date_range)
@@ -39,7 +60,7 @@ async function getBuoysDataAndUpdatesChart(date_range){
     })
 }
 
-function displayChart(x, y){
+function displayChart(x, y, label){
 
     if(typeof myLineChart !== 'undefined'){
         myLineChart.destroy()
@@ -50,6 +71,7 @@ function displayChart(x, y){
         data: {
             labels: x,
             datasets: [{
+                label: "Total",
                 fill: false,
                 lineTension: 0,
                 backgroundColor: "rgba(0,0,255,1.0)",
@@ -68,7 +90,13 @@ function displayChart(x, y){
                             day: 'DD/MM/YYYY'
                         }
                     }
-                }]
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: chart_proprieties_dict[current_param]['label']
+                    }
+                }],
             }
         }
     })
@@ -92,6 +120,8 @@ var from = $( "#from" )
     to.datepicker( "option", "minDate", getDate( this ) );
     //to.datepicker( "option", "dateFormat", "yy-mm-dd" );
     date_range['from'] = this.value
+    range_option = "custom"
+    document.getElementById("range").value = range_option
     getBuoysDataAndUpdatesChart(date_range)
 })
 
@@ -106,6 +136,8 @@ var to = $( "#to" ).datepicker({
     from.datepicker( "option", "maxDate", getDate( this ) );
     //from.datepicker( "option", "dateFormat", "yy-mm-dd" );
     date_range['to'] = this.value
+    range_option = "custom"
+    document.getElementById("range").value = range_option
     getBuoysDataAndUpdatesChart(date_range)
 })
 
@@ -125,16 +157,51 @@ function transformDate(date){
     return date.slice(5, 7) + '/' + date.slice(8, 10) + '/' + date.slice(0, 4)
 }
 
-// Init
-async function ini_func(){
-    const response = await fetch('http://localhost:8150/lastDateRange?days=7')
-    date_range_ = await response.json()
-    date_range = date_range_
-    return date_range_
+function getDataRangeQuery(){
+    return 'http://localhost:8150/lastDateRange?days=' + time_range_dict[range_option]['days'] + 
+            '&months=' + time_range_dict[range_option]['months'] + '&years=' + time_range_dict[range_option]['years']
 }
 
-ini_func().then(date_range_ => {
-    return getBuoysData(date_range_)
+document.getElementById("range").onchange = rangeChangeListener
+
+async function rangeChangeListener(){
+    var value = this.value
+    range_option = value
+    try {
+        const response = await fetch(getDataRangeQuery())
+        date_range = await response.json()
+        document.getElementById( "from" ).value = date_range['from'][0].slice(0,10)
+        document.getElementById( "to" ).value = date_range['to'][0].slice(0,10)
+        to.datepicker( "option", "minDate", getDate( document.getElementById( "from" ) ) )
+        from.datepicker( "option", "maxDate", getDate( document.getElementById( "to" ) ) );
+        getBuoysDataAndUpdatesChart(date_range)
+    } catch( error ) {
+        if(range_option === 'all'){
+            const response = await fetch('http://localhost:8150/lastDateRange?all')
+            date_range = await response.json()
+            document.getElementById( "from" ).value = date_range['from'][0].slice(0,10)
+            document.getElementById( "to" ).value = date_range['to'][0].slice(0,10)
+            to.datepicker( "option", "minDate", getDate( document.getElementById( "from" ) ) )
+            from.datepicker( "option", "maxDate", getDate( document.getElementById( "to" ) ) );
+            getBuoysDataAndUpdatesChart(date_range)
+        }
+    }
+}
+
+// Init
+async function ini_func(){
+    document.getElementById( "range" ).value = range_option
+    if(range_option === 'all'){
+        var response = await fetch('http://localhost:8150/lastDateRange?all')
+    }else{
+        var response = await fetch(getDataRangeQuery())
+    }
+    date_range = await response.json()
+    return date_range
+}
+
+ini_func().then(date_range => {
+    return getBuoysData(date_range)
 })
 .then(res => {
     document.getElementById( "from" ).value = transformDate(date_range['from'][0])
