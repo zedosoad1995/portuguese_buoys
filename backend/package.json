@@ -27,10 +27,13 @@
   },
   "homepage": "https://github.com/zedosoad1995/portuguese_buoys#readme",
   "dependencies": {
+    "exceljs": "^4.3.0",
     "express": "^4.17.1",
     "fd": "0.0.3",
     "got": "^11.8.2",
-    "pg": "^8.7.1"
+    "mysql2": "^2.3.0",
+    "pg": "^8.7.1",
+    "sequelize": "^6.6.5"
   },
   "devDependencies": {
     "nodemon": "^2.0.12"

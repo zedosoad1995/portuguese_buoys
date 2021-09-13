@@ -10,6 +10,7 @@ server.use(function(req, res, next) {
 
 const got = require('got');
 const queries = require('./queries')
+const excel = require('./excel_download')
 
 const bodyParser = require('body-parser')
 
@@ -31,6 +32,7 @@ var map_characteristic = {
 server.post('/insertBuoys', bodyParser.json(), queries.insertBuoysData)
 server.get('/getBuoys', queries.getBuoysData)
 server.get('/lastDateRange', queries.getLastDateRange)
+server.get('/download', excel.download_excel)
 
 async function get_buoys_data(path, transformation_type){
     let resp = {}
@@ -164,5 +166,4 @@ server.post('/scrapeAndSave', function (req, res, next) {
 
 });
   
-
 server.listen(PORT, () => console.log(`Server from port: ${PORT} activated!`));

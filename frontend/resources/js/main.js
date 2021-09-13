@@ -21,6 +21,9 @@ var chart_proprieties_dict = {
     direction: {label: "Wave diraction (0° to 360°)"},
 }
 
+async function downloadExcel(){
+    response = await fetch('http://localhost:8150/download').then(res => res.text())
+}
 
 async function scrapeAndSave(){
     var response = await fetch('http://localhost:8150/scrapeAndSave', {
